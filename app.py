@@ -1,10 +1,6 @@
 from flask import Flask, request, jsonify
 import flask
-from flask import Flask, request, jsonify
-import flask
 import requests
-
-app = Flask(__name__)
 
 app = Flask(__name__)
 
@@ -15,8 +11,10 @@ def hello_flask():
 @app.route('/get-market-data')
 def get_market_data():
     response = requests.get('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AAPL&apikey=QLYRUT52O4STJNRG')
-    return jsonify(response.json())
-    
+    data = response.json()
+    last_10_days = list(data['Time Series (Daily)'].keys())[:10]
+    filtered_data = {day: data['Time Series (Daily)'][day] for day in last_10_days}
+    return jsonify(filtered_data)
 
 @app.route('/get-user/<user_id>')
 def get_user(user_id):
