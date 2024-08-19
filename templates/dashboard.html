@@ -1,16 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Hello Page</title>
+    <title>Market Dashboard</title>
     <link rel="stylesheet" type="text/css" href="/static/hello.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <nav>navbar</nav>
     <div class="container">
         <div class="heading">
-            Hello
+            Market Data
         </div>
-        <a href="/dashboard">Get Market Data</a></button>
+        <input type="date" id="prediction-date">
+        <button onclick="fetchPrediction()">Get Market Prediction</button>
+        <div id="prediction-result"></div>
+        <canvas id="marketChart" width="400" height="200"></canvas>
     </div>
+    <script>
+        // Fetches the market prediction based on the selected date
+        function fetchPrediction() {
+            const date = document.getElementById('prediction-date').value;
+            fetch(`/predict`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('prediction-result');
+                    resultDiv.innerHTML = `Predicted Close Price: ${data.predicted_close}`;
+                });
+        }
+
+        // Fetches the market data and displays it as a line chart
+        function fetchMarketData() {
+            fetch('/get-market-data')
+                .then(response => response.json())
+                .then(data => {
+                    const dates = Object.keys(data);
+                    const closePrices = dates.map(date => data[date]['4. close']);
+
+                    const ctx = document.getElementById('marketChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: dates,
+                            datasets: [{
+                                label: 'Close Price',
+                                data: closePrices,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1,
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'day'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: false
+                                }
+                            }
+                        }
+                    });
+                });
+        }
+
+        // Fetch market data on page load
+        window.onload = fetchMarketData;
+    </script>
 </body>
 </html>
