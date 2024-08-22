@@ -29,7 +29,7 @@ def fetch_data():
     Returns a combined DataFrame of the fetched data.
     """
     # Fetch stock prices
-    response = requests.get('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AAPL&apikey=J1TVNBS1XD48RGXL')
+    response = requests.get('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AAPL&apikey=8MD9CMGZZZWUWWPY')
     data = response.json()
     stock_prices = pd.DataFrame.from_dict(data['Time Series (Daily)'], orient='index')
     stock_prices.index = pd.to_datetime(stock_prices.index)
