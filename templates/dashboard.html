@@ -4,70 +4,46 @@
     <title>Market Dashboard</title>
     <link rel="stylesheet" type="text/css" href="/static/hello.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 </head>
 <body>
-    <nav>navbar</nav>
+    <nav><a href="/">navbar</a></nav>
     <div class="container">
         <div class="heading">
             Market Data
         </div>
-        <input type="date" id="prediction-date">
-        <button onclick="fetchPrediction()">Get Market Prediction</button>
-        <div id="prediction-result"></div>
+
+        <button onclick="fetchMarketData()">Get Market Data</button>
+        <div id="prediction-result">
+            <ul id="data-list">
+                <!-- List items will be added here dynamically -->
+            </ul>
+            {{ data }}
+        </div>
         <canvas id="marketChart" width="400" height="200"></canvas>
     </div>
     <script>
-        // Fetches the market prediction based on the selected date
-        function fetchPrediction() {
-            const date = document.getElementById('prediction-date').value;
-            fetch(`/predict`)
-                .then(response => response.json())
-                .then(data => {
-                    const resultDiv = document.getElementById('prediction-result');
-                    resultDiv.innerHTML = `Predicted Close Price: ${data.predicted_close}`;
-                });
-        }
-
         // Fetches the market data and displays it as a line chart
         function fetchMarketData() {
-            fetch('/get-market-data')
+            fetch(`/get-market-data`)
                 .then(response => response.json())
                 .then(data => {
-                    const dates = Object.keys(data);
-                    const closePrices = dates.map(date => data[date]['4. close']);
+                    // Clear existing list items
+                    const dataList = document.getElementById('data-list');
+                    dataList.innerHTML = '';
 
-                    const ctx = document.getElementById('marketChart').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: dates,
-                            datasets: [{
-                                label: 'Close Price',
-                                data: closePrices,
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                borderWidth: 1,
-                                fill: false
-                            }]
-                        },
-                        options: {
-                            scales: {
-                                x: {
-                                    type: 'time',
-                                    time: {
-                                        unit: 'day'
-                                    }
-                                },
-                                y: {
-                                    beginAtZero: false
-                                }
-                            }
-                        }
+                    // Add each data point to the list
+                    Object.keys(data).forEach(timestamp => {
+                        const date = new Date(parseInt(timestamp)).toLocaleDateString();
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `${date}: ${JSON.stringify(data[timestamp])}`;
+                        dataList.appendChild(listItem);
                     });
+
+                    // Display data in the #prediction-result div
+                    document.getElementById('prediction-result').innerHTML += JSON.stringify(data, null, 2);
                 });
         }
-
-        // Fetch market data on page load
-        window.onload = fetchMarketData;
     </script>
 </body>
 </html>

@@ -29,7 +29,7 @@ def fetch_data():
     Returns a combined DataFrame of the fetched data.
     """
     # Fetch stock prices
-    response = requests.get('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AAPL&apikey=QLYRUT52O4STJNRG')
+    response = requests.get('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AAPL&apikey=J1TVNBS1XD48RGXL')
     data = response.json()
     stock_prices = pd.DataFrame.from_dict(data['Time Series (Daily)'], orient='index')
     stock_prices.index = pd.to_datetime(stock_prices.index)
@@ -80,7 +80,7 @@ def get_market_data():
     Fetches the last 30 days of market data and returns it as JSON.
     """
     combined_data = fetch_data()
-    last_30_days = combined_data.tail(30)
+    last_30_days = combined_data.head(30)
     return last_30_days.to_json(orient='index')
 
 @app.route('/predict', methods=['GET'])
