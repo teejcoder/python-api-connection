@@ -18,14 +18,14 @@
             <ul id="data-list">
                 <!-- List items will be added here dynamically -->
             </ul>
-            {{ data }}
         </div>
         <canvas id="marketChart" width="400" height="200"></canvas>
     </div>
     <script>
         // Fetches the market data and displays it as a line chart
-        function fetchMarketData() {
-            fetch(`/get-market-data`)
+        async function fetchMarketData() {
+            try {
+                fetch(`/get-market-data`)
                 .then(response => response.json())
                 .then(data => {
                     // Clear existing list items
@@ -43,6 +43,9 @@
                     // Display data in the #prediction-result div
                     document.getElementById('prediction-result').innerHTML += JSON.stringify(data, null, 2);
                 });
+            } catch(error){
+                console.error(error)
+            }
         }
     </script>
 </body>

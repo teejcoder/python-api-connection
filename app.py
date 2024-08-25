@@ -2,32 +2,31 @@ from flask import Flask, request, jsonify
 import flask
 import requests
 import pandas as pd
+import logging
+from flask_caching import Cache
 from datetime import datetime
 from statsmodels.tsa.arima.model import ARIMA
 
-# app.py
+# Configure cache
+cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+cache.init_app(app)
 
 @app.route('/')
 def hello_flask():
-    """
-    Renders the hello.html template when the root URL is accessed.
-    """
     return flask.render_template("hello.html")
 
 @app.route('/dashboard')
 def dashboard():
-    """
-    Renders the dashboard.html template when the /dashboard URL is accessed.
-    """
     return flask.render_template("dashboard.html")
 
 def fetch_data():
-    """
-    Fetches stock prices and additional data from APIs or data sources.
-    Returns a combined DataFrame of the fetched data.
-    """
     # Fetch stock prices
     response = requests.get('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AAPL&apikey=8MD9CMGZZZWUWWPY')
     data = response.json()
@@ -75,24 +74,38 @@ def fetch_data():
     return combined_data
 
 @app.route('/get-market-data')
+@cache.cached(timeout=500)
 def get_market_data():
     """
     Fetches the last 30 days of market data and returns it as JSON.
     """
+    logger.info("Fetching market data")
     combined_data = fetch_data()
     last_30_days = combined_data.head(30)
+    logger.info("Market data fetched and cached")
     return last_30_days.to_json(orient='index')
 
 @app.route('/predict', methods=['GET'])
+@cache.cached(timeout=500)
 def predict():
     """
     Uses ARIMA model to predict the closing stock price and returns the prediction as JSON.
     """
+    logger.info("Fetching prediction data")
     combined_data = fetch_data()
     model = ARIMA(combined_data['4. close'], order=(5, 1, 0))
     model_fit = model.fit()
     forecast = model_fit.forecast(steps=1)
+    logger.info("Prediction data fetched and cached")
     return jsonify({'predicted_close': forecast[0]})
+
+@app.route('/clear-cache', methods=['POST'])
+def clear_cache():
+    """
+    Clears the cache.
+    """
+    cache.clear()
+    return jsonify({'message': 'Cache cleared'})
 
 if __name__ == '__main__':
     app.run(debug=True)
