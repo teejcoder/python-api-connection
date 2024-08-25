@@ -76,9 +76,7 @@ def fetch_data():
 @app.route('/get-market-data')
 @cache.cached(timeout=500)
 def get_market_data():
-    """
-    Fetches the last 30 days of market data and returns it as JSON.
-    """
+    #Fetches the last 30 days of market data and returns it as JSON.
     logger.info("Fetching market data")
     combined_data = fetch_data()
     last_30_days = combined_data.head(30)
@@ -88,9 +86,7 @@ def get_market_data():
 @app.route('/predict', methods=['GET'])
 @cache.cached(timeout=500)
 def predict():
-    """
-    Uses ARIMA model to predict the closing stock price and returns the prediction as JSON.
-    """
+    ##Uses ARIMA model to predict the closing stock price and returns the prediction as JSON.
     logger.info("Fetching prediction data")
     combined_data = fetch_data()
     model = ARIMA(combined_data['4. close'], order=(5, 1, 0))
@@ -101,9 +97,7 @@ def predict():
 
 @app.route('/clear-cache', methods=['POST'])
 def clear_cache():
-    """
-    Clears the cache.
-    """
+    ##Clears the cache.
     cache.clear()
     return jsonify({'message': 'Cache cleared'})
 
